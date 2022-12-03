@@ -9,6 +9,7 @@ type backpack struct {
 	original     string
 	compartments [2]map[byte]int
 	duplicates   map[byte]int
+	global       map[byte]int
 }
 
 func newBackpack(contents string) (bkp *backpack) {
@@ -21,6 +22,7 @@ func newBackpack(contents string) (bkp *backpack) {
 		original:     contents,
 		compartments: [2]map[byte]int{{}, {}},
 		duplicates:   map[byte]int{},
+		global:       map[byte]int{},
 	}
 
 	for ii := 0; ii < contentLength; ii++ {
@@ -34,6 +36,7 @@ func newBackpack(contents string) (bkp *backpack) {
 			}
 		}
 
+		bkp.global[item]++
 		bkp.compartments[index][item]++
 	}
 
