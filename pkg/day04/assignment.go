@@ -43,9 +43,15 @@ func interpretInstruction(line string) *assignment {
 }
 
 func (asg *assignment) isRangeFullyContained() bool {
-
 	res := asg.areas[0].min >= asg.areas[1].min && asg.areas[0].max <= asg.areas[1].max ||
 		asg.areas[1].min >= asg.areas[0].min && asg.areas[1].max <= asg.areas[0].max
+
+	return res
+}
+
+func (asg *assignment) doesRangeOverlap() bool {
+	res := asg.areas[0].min <= asg.areas[1].max && asg.areas[0].max >= asg.areas[1].min ||
+		asg.areas[1].min <= asg.areas[0].max && asg.areas[1].max >= asg.areas[0].min
 
 	return res
 }

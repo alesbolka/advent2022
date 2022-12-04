@@ -13,5 +13,11 @@ func Task1(input string) (res int) {
 }
 
 func Task2(input string) (res int) {
+	for _, line := range strings.Split(input, "\n") {
+		if interpretInstruction(line).doesRangeOverlap() {
+			res++
+		}
+	}
+
 	return
 }
