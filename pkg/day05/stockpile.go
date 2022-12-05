@@ -63,7 +63,7 @@ func parseStockpile(stacks string, distribution []string) (pile *stockpile) {
 	return
 }
 
-func (pile *stockpile) ExecuteCommand(command string) {
+func (pile *stockpile) ExecuteCommand(command string, model int) {
 	matched := instructionRegex.FindStringSubmatch(command)
 
 	if len(matched) != 4 {
@@ -74,16 +74,27 @@ func (pile *stockpile) ExecuteCommand(command string) {
 	from := matched[2][0]
 	to := matched[3][0]
 
-	// infexFrom, ok1 := pile.positions[from]
-
 	var moving byte
 
-	for ii := 0; ii < count; ii++ {
-		indexOfLast := len(pile.stacks[from]) - 1
+	if model == 9000 {
+		// Very unsafe, no checks for length
+		for ii := 0; ii < count; ii++ {
+			indexOfLast := len(pile.stacks[from]) - 1
 
-		moving, pile.stacks[from] = pile.stacks[from][indexOfLast], pile.stacks[from][:indexOfLast]
-		pile.stacks[to] = append(pile.stacks[to], moving)
+			moving, pile.stacks[from] = pile.stacks[from][indexOfLast], pile.stacks[from][:indexOfLast]
+			pile.stacks[to] = append(pile.stacks[to], moving)
+		}
+		return
 	}
+
+	if model != 9001 {
+		log.Fatalf("Unsupported model %d", model)
+	}
+
+	// Very unsafe, no checks for length
+	fromlength := len(pile.stacks[from])
+	pile.stacks[to] = append(pile.stacks[to], pile.stacks[from][fromlength-count:]...)
+	pile.stacks[from] = pile.stacks[from][:fromlength-count]
 }
 
 func (pile *stockpile) GetTop() (res string) {
