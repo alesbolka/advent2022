@@ -85,13 +85,9 @@ func (sys *elfSystem) handleLSOutput(output string) {
 	sys.cwd.files[parts[1]] = val
 }
 
-func (sys *elfSystem) getCombinedSmallFolderSize(threshold uint64) (res uint64) {
-	resMap := map[string]uint64{}
-
+func (sys *elfSystem) getCombinedSmallFolderSize(threshold uint64) (resMap map[string]uint64) {
+	resMap = map[string]uint64{}
 	sys.root.getSize(threshold, resMap)
 
-	for _, size := range resMap {
-		res += size
-	}
 	return
 }
