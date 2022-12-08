@@ -68,3 +68,68 @@ func Task1(input string) (res int) {
 
 	return
 }
+
+func Task2(input string) (res int) {
+
+	lines := strings.Split(input, "\n")
+	dimY := len(lines)
+	dimX := len(lines[0])
+
+	for houseY := 1; houseY < dimY-1; houseY++ {
+		for houseX := 1; houseX < dimX-1; houseX++ {
+			current := 1
+			tempScore := 0
+
+			// above
+			for yy := houseY - 1; yy >= 0; yy-- {
+				tempScore++
+
+				if lines[yy][houseX] >= lines[houseY][houseX] {
+					break
+				}
+			}
+
+			current *= tempScore
+			tempScore = 0
+
+			// below
+			for yy := houseY + 1; yy < dimY; yy++ {
+				tempScore++
+
+				if lines[yy][houseX] >= lines[houseY][houseX] {
+					break
+				}
+			}
+
+			current *= tempScore
+			tempScore = 0
+
+			// left
+			for xx := houseX - 1; xx >= 0; xx-- {
+				tempScore++
+
+				if lines[houseY][xx] >= lines[houseY][houseX] {
+					break
+				}
+			}
+
+			current *= tempScore
+			tempScore = 0
+
+			// right
+			for xx := houseX + 1; xx < dimX; xx++ {
+				tempScore++
+
+				if lines[houseY][xx] >= lines[houseY][houseX] {
+					break
+				}
+			}
+
+			current *= tempScore
+			if current > res {
+				res = current
+			}
+		}
+	}
+	return
+}
