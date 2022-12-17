@@ -7,9 +7,10 @@ import (
 )
 
 type CPU struct {
-	currentCycle   uint64
+	currentCycle   int
 	registry       int
 	signalStrength int
+	screen         [6][40]byte
 }
 
 func NewCPU() *CPU {
@@ -20,8 +21,16 @@ func NewCPU() *CPU {
 }
 
 func (cpu *CPU) cycle() {
+	displayRow := (cpu.currentCycle - 1) / 40
+	displayColumn := (cpu.currentCycle - 1) % 40
+
+	cpu.screen[displayRow][displayColumn] = '.'
+	if displayColumn >= (cpu.registry-1) && displayColumn <= (cpu.registry+1) {
+		cpu.screen[displayRow][displayColumn] = '#'
+	}
+
 	if cpu.currentCycle >= 20 && (cpu.currentCycle-20)%40 == 0 {
-		cpu.signalStrength += int(cpu.currentCycle) * cpu.registry
+		cpu.signalStrength += cpu.currentCycle * cpu.registry
 	}
 	cpu.currentCycle++
 }
@@ -61,4 +70,11 @@ func (cpu *CPU) RunProgram(commands string) (res int, err error) {
 	}
 
 	return cpu.signalStrength, nil
+}
+
+func (cpu *CPU) ShowScreen() (res string) {
+	for ii := 0; ii < 6; ii++ {
+		res += string(cpu.screen[ii][:]) + "\n"
+	}
+	return
 }
