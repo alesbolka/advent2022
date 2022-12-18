@@ -8,7 +8,7 @@ type Map struct {
 	candidates []candidate
 	end        *coordinate
 	grid       [][]*coordinate
-	start      *coordinate
+	Start      *coordinate
 }
 
 var dirPairs [][2]int = [][2]int{
@@ -34,8 +34,8 @@ func NewMap(input string) *Map {
 			}
 
 			if line[xx] == 'S' {
-				res.start = res.grid[yy][xx]
-				res.start.height = 'a'
+				res.Start = res.grid[yy][xx]
+				res.Start.height = 'a'
 			} else if line[xx] == 'E' {
 				res.end = res.grid[yy][xx]
 				res.end.height = 'z'
@@ -46,15 +46,20 @@ func NewMap(input string) *Map {
 	return res
 }
 
-func (mp *Map) FindShortestPath() int {
+func (mp *Map) FindShortestPath(start *coordinate) int {
+	for _, row := range mp.grid {
+		for _, coord := range row {
+			coord.used = false
+		}
+	}
 	mp.candidates = []candidate{
 		{
-			coordinate: mp.start,
+			coordinate: start,
 			distance:   0,
 		},
 	}
 
-	mp.start.used = true
+	start.used = true
 
 	for len(mp.candidates) != 0 {
 		winner := mp.iterate()
@@ -119,4 +124,17 @@ func (mp *Map) insertCandidate(node *coordinate, newDist int) {
 			return
 		}
 	}
+}
+
+func (mp *Map) GetAllOfElevation(elev byte) []*coordinate {
+	res := []*coordinate{}
+	for _, row := range mp.grid {
+		for _, coord := range row {
+			if coord.height == elev {
+				res = append(res, coord)
+			}
+		}
+	}
+
+	return res
 }
