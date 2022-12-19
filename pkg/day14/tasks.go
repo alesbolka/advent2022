@@ -7,5 +7,6 @@ func Task1(input string) int {
 }
 
 func Task2(input string) int {
-	return 0
+	pit := NewSandpit(500, 0, input)
+	return pit.FillUp()
 }

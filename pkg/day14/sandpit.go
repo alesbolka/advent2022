@@ -103,6 +103,7 @@ func NewSandpit(sourceX, sourceY int, input string) *Sandpit {
 }
 
 func (pit *Sandpit) emptySand() {
+	pit.room[pit.source.Y][pit.source.X] = 'S'
 	for yy := range pit.room {
 		for xx, val := range pit.room[yy] {
 			if val == 2 {
@@ -125,11 +126,24 @@ func (pit *Sandpit) TimeToVoid() int {
 	return -1
 }
 
+func (pit *Sandpit) FillUp() (res int) {
+	pit.emptySand()
+	for pit.room[pit.source.Y][pit.source.X] == 'S' {
+		pit.dropGrain()
+		res++
+	}
+	return
+}
+
 func (pit *Sandpit) dropGrain() int {
 	xx, yy := pit.source.X, pit.source.Y
 
 	for {
-		if yy > pit.rangeY[1] {
+		if yy == pit.rangeY[1]+1 {
+			if _, exists := pit.room[yy]; !exists {
+				pit.room[yy] = map[int]byte{}
+			}
+			pit.room[yy][xx] = 'o'
 			return yy
 		}
 
@@ -161,8 +175,13 @@ func (pit *Sandpit) dropGrain() int {
 }
 
 func (pit *Sandpit) String() (res string) {
-	for yy := pit.rangeY[0]; yy <= pit.rangeY[1]; yy++ {
-		for xx := pit.rangeX[0]; xx <= pit.rangeX[1]; xx++ {
+	ground := pit.rangeY[1] + 2
+	for yy := pit.rangeY[0]; yy <= ground; yy++ {
+		for xx := pit.rangeX[0] - 4; xx <= pit.rangeX[1]+3; xx++ {
+			if yy == ground {
+				res += "#"
+				continue
+			}
 			val := pit.room[yy][xx]
 			switch val {
 			case 0:
