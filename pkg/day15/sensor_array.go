@@ -7,23 +7,9 @@ import (
 	"strings"
 )
 
-type coordinates struct {
-	x int
-	y int
-}
-
-func (cx coordinates) String() string {
-	return fmt.Sprintf("(%d,%d)", cx.x, cx.y)
-}
-
-type sensor struct {
-	self        coordinates
-	closest     coordinates
-	emptyRadius int
-}
-
 type SensorArray struct {
 	sensors []sensor
+	beacons map[coordinates]bool
 }
 
 func manhattan(a, b coordinates) (res int) {
@@ -45,6 +31,7 @@ func manhattan(a, b coordinates) (res int) {
 func NewArray(input string) (*SensorArray, error) {
 	res := &SensorArray{
 		sensors: []sensor{},
+		beacons: map[coordinates]bool{},
 	}
 
 	lineRegex := regexp.MustCompile(`^Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)$`)
@@ -54,11 +41,15 @@ func NewArray(input string) (*SensorArray, error) {
 			return nil, fmt.Errorf("could not parse line '%s'", line)
 		}
 
-		sens := sensor{}
+		sens := sensor{
+			self:    coordinates{},
+			closest: coordinates{},
+		}
 		sens.self.x, _ = strconv.Atoi(match[1])
 		sens.self.y, _ = strconv.Atoi(match[2])
 		sens.closest.x, _ = strconv.Atoi(match[3])
 		sens.closest.y, _ = strconv.Atoi(match[4])
+		res.beacons[sens.closest] = true
 		sens.emptyRadius = manhattan(sens.self, sens.closest)
 
 		res.sensors = append(res.sensors, sens)
@@ -93,5 +84,51 @@ func (arr SensorArray) CountEmptySpots(targetRow int) (res int) {
 		}
 	}
 
+	return
+}
+
+func (arr SensorArray) FindEmptySpot(zoneMin, zoneMax int) (res map[coordinates]bool) {
+	res = map[coordinates]bool{}
+	alreadyChecked := map[coordinates]bool{}
+
+	for sensorIndex, sensor := range arr.sensors {
+		// the beacon will be 1 off the radius, always
+		offset := sensor.emptyRadius + 1
+
+		candidates := []coordinates{}
+		for ii := 0; ii <= 2*offset; ii++ {
+			top := coordinates{sensor.self.x - offset + ii, sensor.self.y + ii}
+			bottom := coordinates{sensor.self.x - offset + ii, sensor.self.y - ii}
+			if top.x > sensor.self.x {
+				top.y = sensor.self.y + 2*offset - ii
+				bottom.y = sensor.self.y - 2*offset + ii
+			}
+
+			if top.InZone(zoneMin, zoneMax) && !alreadyChecked[top] {
+				candidates = append(candidates, top)
+			}
+
+			if alreadyChecked[bottom] || top.y == sensor.self.y || !bottom.InZone(zoneMin, zoneMax) {
+				continue
+			}
+			candidates = append(candidates, bottom)
+		}
+
+	CANDIDATE_LOOP:
+		for _, candidate := range candidates {
+			if arr.beacons[candidate] {
+				continue
+			}
+			for checkIndex, otherSensor := range arr.sensors {
+				if checkIndex == sensorIndex {
+					continue
+				}
+				if otherSensor.InRange(candidate) {
+					continue CANDIDATE_LOOP
+				}
+			}
+			res[candidate] = true
+		}
+	}
 	return
 }
